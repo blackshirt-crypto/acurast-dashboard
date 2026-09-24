@@ -54,6 +54,7 @@ The first scan can take a few minutes. If the page says "temporarily unavailable
 |---|---|
 | `WALLETS` | Your wallets: a label (tab name), your public address (starts with `5...`), and a color. Add as many as you like. |
 | `'processor': True` | Add this to your **Processor manager** wallet to enable fleet and fee features. Leave it off normal wallets. |
+| `'manual_lock': 123.45` | Optional, per wallet. Use it if the Acurast Hub shows a "Locked by Airdrop" amount that the dashboard can't see. It's shown as a manual entry and added to the wallet total. Update or remove it when it changes. |
 | `MANAGER_ID` | Your processor manager ID from Acurast Pulse, or `None` if you don't run a processor fleet. |
 | `DB_PATH` | Where the SQLite database is stored (default: next to the script). |
 | `DASHBOARD_HOST` | `127.0.0.1` = only this machine can view it (**default, safest**). |
