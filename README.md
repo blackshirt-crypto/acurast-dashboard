@@ -38,22 +38,9 @@ cd acurast-dashboard
 
 This downloads the dashboard into a folder called `acurast-dashboard` and moves you into it.
 
-### Step 2 — Install dependencies
+### Step 2 — Create your config
 
-```bash
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-```
-
-What these do:
-- **Line 1** creates an isolated Python environment so nothing conflicts with your system.
-- **Line 2** activates it. Your terminal prompt will change to show `(venv)` at the beginning.
-- **Line 3** installs the one library the dashboard needs (`substrate-interface`, which talks to the Acurast chain).
-
-### Step 3 — Create your config
-
-Open **[setup.html](setup.html)** in your browser — just double-click the file inside the `acurast-dashboard` folder. The wizard walks you through:
+Open the `acurast-dashboard` folder on your computer and double-click **[setup.html](setup.html)**. It opens in your browser and walks you through:
 
 1. Entering your Processor wallet address (with a link to find it on the [Acurast Hub](https://hub.acurast.com))
 2. Your Manager ID (with a link to find it on [Acurast Pulse](https://www.acurastpulse.com))
@@ -69,9 +56,24 @@ cp config.example.py config.py
 nano config.py
 ```
 
+### Step 3 — Install dependencies
+
+Back in your terminal (still inside the `acurast-dashboard` folder), run:
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
+
+What these do:
+- **Line 1** creates an isolated Python environment so nothing conflicts with your system.
+- **Line 2** activates it. Your terminal prompt will change to show `(venv)` at the beginning.
+- **Line 3** installs the one library the dashboard needs (`substrate-interface`, which talks to the Acurast chain).
+
 ### Step 4 — Start the dashboard
 
-Make sure your terminal still shows `(venv)` at the prompt. If it doesn't, run `source venv/bin/activate` first. Then:
+Your terminal should now show `(venv)` at the prompt. Then:
 
 ```bash
 python3 acurast_daemon_v2.py
