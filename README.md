@@ -48,10 +48,22 @@ python3 setup.py
 python3 acurast_daemon_v2.py
 ```
 
-Open **http://127.0.0.1:8888** in a browser on the same machine.
-The first scan can take a few minutes. If the page says "temporarily unavailable", wait and refresh.
+That one command does everything: creates the database, connects to the
+Acurast chain, scans for rewards, and starts the dashboard web server.
+
+Open **http://127.0.0.1:8888** in your browser (or your Tailscale/VPN IP
+if running on a remote server — `setup.html` puts the URL in a comment
+at the bottom of your `config.py`).
+
+The first scan takes a few minutes while it reads the chain. If the page
+says "temporarily unavailable", wait for the scan to finish and refresh.
+After that it rescans automatically every 90 minutes.
 
 ## Configuration (`config.py`)
+
+The easiest way to create this file is with **`setup.html`** — open it in
+your browser, fill in your wallets, and download the file. The settings
+below are for reference or if you prefer to edit `config.py` by hand.
 
 | Setting | What it does |
 |---|---|
@@ -67,7 +79,8 @@ The first scan can take a few minutes. If the page says "temporarily unavailable
 
 ### Example `config.py`
 
-Here's a filled-in example that uses every option. **Replace the placeholder addresses with your own public addresses.**
+For reference, here's a filled-in example that uses every option.
+You don't need to write this by hand — `setup.html` generates it for you. **Replace the placeholder addresses with your own public addresses.**
 
 ```python
 import os
