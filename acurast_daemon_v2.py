@@ -17,6 +17,7 @@ PM2:
 import sqlite3, os, time, logging, threading, json, urllib.request
 from datetime import datetime, timezone, timedelta
 from http.server import HTTPServer, SimpleHTTPRequestHandler
+from http.server import ThreadingHTTPServer
 from substrateinterface import SubstrateInterface
 
 # -- User config: edit config.py, not this file --------------------------------
@@ -1316,7 +1317,7 @@ class DashHandler(SimpleHTTPRequestHandler):
         pass
 
 def start_server():
-    server = HTTPServer((DASHBOARD_HOST, DASHBOARD_PORT), DashHandler)
+    server = ThreadingHTTPServer((DASHBOARD_HOST, DASHBOARD_PORT), DashHandler)
     log.info('Dashboard -> http://%s:%d', DASHBOARD_HOST, DASHBOARD_PORT)
     server.serve_forever()
 
