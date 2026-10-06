@@ -47,12 +47,19 @@ fi
 info "Found $PY ($($PY --version 2>&1))"
 
 # ── Check venv module ────────────────────────────────────────────────────────
-if ! $PY -m venv --help &>/dev/null; then
-    fail "Python venv module not found.
+TESTVENV=$(mktemp -d)/venvtest
+if ! $PY -m venv "$TESTVENV" 2>/dev/null; then
+    rm -rf "$(dirname "$TESTVENV")"
+    PYVER=$($PY -c "import sys; print('{}.{}'.format(*sys.version_info[:2]))")
+    fail "Python venv module not installed.
     Install it:
-      Ubuntu/Debian:  sudo apt install python3-venv
+      Ubuntu/Debian:  sudo apt install python${PYVER}-venv
+      Fedora:         sudo dnf install python3-virtualenv
+      macOS:          (included with brew install python3)
     Then run this installer again."
 fi
+rm -rf "$(dirname "$TESTVENV")"
+info "Python venv module ready"
 
 # ── Check git ────────────────────────────────────────────────────────────────
 if ! command -v git &>/dev/null; then
