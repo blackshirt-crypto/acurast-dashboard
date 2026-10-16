@@ -457,7 +457,8 @@ def generate_dashboard(price=None):
         airdrop_start = airdrop_row['lock_start']           if airdrop_row else 0
         staked        = max(frozen - airdrop_amt, 0.0)
         free_f        = max(free - staked, 0.0)
-        wallet_total  = airdrop_amt + staked + free_f
+        manual_lock   = float(cfg.get('manual_lock', 0) or 0)   # lock the RPC can't see (set in config.py)
+        wallet_total  = airdrop_amt + staked + free_f + manual_lock
         conv          = conversion_progress(airdrop_start, None, airdrop_amt) if airdrop_amt > 0 else None
 
         base_row  = conn.execute('SELECT total_raw FROM baselines WHERE wallet=?', (label,)).fetchone()
@@ -565,6 +566,7 @@ def generate_dashboard(price=None):
             'frozen':        frozen,
             'free_f':        free_f,
             'airdrop_amt':   airdrop_amt,
+            'manual_lock':   manual_lock,
             'airdrop_start': airdrop_start,
             'reserved':      reserved,
             'conv':          conv,
@@ -601,7 +603,7 @@ def generate_dashboard(price=None):
     grand_free    = sum(w['wallet_total'] for w in wallet_data)
     grand_frozen  = sum(w['frozen']     for w in wallet_data)
     grand_free_f  = sum(w['free_f']     for w in wallet_data)
-    grand_airdrop = sum(w['airdrop_amt']for w in wallet_data)
+    grand_airdrop = sum(w['airdrop_amt'] + w['manual_lock'] for w in wallet_data)
     grand_in      = sum(w['total_in']   for w in wallet_data)
     grand_out     = sum(w['total_out']  for w in wallet_data)
     grand_hb      = sum(w['hb_fees']    for w in wallet_data)
@@ -966,10 +968,10 @@ def generate_dashboard(price=None):
                       usd(w['wallet_total']),
                       'Total ACU in this wallet on-chain (System.Account free field). Includes both locked and freely available portions.') +
             stat_cell('c-locked', 'Airdrop Lock',
-                      fmt(w['airdrop_amt'], 4) if w['airdrop_amt'] > 0 else (fmt(w['reserved'], 4) if w['reserved'] > 0 else 'None'),
-                      usd(w['airdrop_amt']) if w['airdrop_amt'] > 0 else (usd(w['reserved']) + ' system lock' if w['reserved'] > 0 else 'No active lock'),
+                      fmt(w['airdrop_amt'], 4) if w['airdrop_amt'] > 0 else (fmt(w['manual_lock'], 4) if w['manual_lock'] > 0 else (fmt(w['reserved'], 4) if w['reserved'] > 0 else 'None')),
+                      usd(w['airdrop_amt']) if w['airdrop_amt'] > 0 else (usd(w['manual_lock']) + ' (manual entry)' if w['manual_lock'] > 0 else (usd(w['reserved']) + ' system lock' if w['reserved'] > 0 else 'No active lock')),
                       'ACU locked from cACU conversion. Cannot transfer without triggering an early unlock that reduces your conversion rate. See progress below. For Processor: includes system-reserved ACU held as processor registration deposits.',
-                      lock=w['airdrop_amt'] > 0 or w['reserved'] > 0) +
+                      lock=w['airdrop_amt'] > 0 or w['manual_lock'] > 0 or w['reserved'] > 0) +
             stat_cell('c-locked', 'Staked',
                       format(w['staked'], ',.4f'),
                       usd(w['staked']),

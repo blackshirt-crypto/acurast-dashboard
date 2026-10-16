@@ -12,6 +12,8 @@ import os
 WALLETS = {
     'My Processor': {'address': '5YOUR_PROCESSOR_MANAGER_ADDRESS_HERE', 'color': '#c8f135', 'processor': True},
     'Wallet 2':     {'address': '5YOUR_SECOND_ADDRESS_HERE',            'color': '#f5a623'},
+    # Optional per wallet: 'manual_lock': 123.45  -> a locked amount the chain query can't see
+    # (e.g. Hub shows 'Locked by Airdrop' but the dashboard shows None). Remove it once unlocked.
     # add or remove lines as needed
 }
 
