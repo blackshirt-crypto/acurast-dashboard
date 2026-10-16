@@ -17,7 +17,7 @@ Built by [Blackshirt Crypto](https://blkshirtpool.com).
 - Combined view across all your wallets
 - Live ACU price (CoinGecko), refreshed every 5 minutes; full chain scan every 90 minutes
 
-Data sources: Acurast public RPC, the [Acurast Pulse](https://www.acurastpulse.com) API, and CoinGecko.
+Data sources: the [Acurast](https://acurast.com) public RPC, the [Acurast Pulse](https://www.acurastpulse.com) API, and [CoinGecko](https://www.coingecko.com) for the ACU price. See [Credits](#credits).
 
 ## Requirements
 
@@ -62,6 +62,45 @@ The first scan can take a few minutes. If the page says "temporarily unavailable
 
 `config.py` is listed in `.gitignore`, so your addresses are never committed if you fork this repo.
 
+### Example `config.py`
+
+Here's a filled-in example that uses every option. **Replace the placeholder addresses with your own public addresses.**
+
+```python
+import os
+
+WALLETS = {
+    # Processor manager wallet: fleet + fee features turned on.
+    # manual_lock = an airdrop lock the Acurast Hub shows but the dashboard can't read from chain.
+    'My Fleet':  {'address': '5ExampleProcessorManagerAddressXXXXXXXXXXXXXXXXX',
+                  'color': '#c8f135', 'processor': True, 'manual_lock': 286.2072},
+
+    # Staking wallets with a cACU -> ACU airdrop lock (detected automatically, no extra options needed)
+    'Staking 1': {'address': '5ExampleStakingWalletNumberOneXXXXXXXXXXXXXXXXXXX', 'color': '#4fc3f7'},
+    'Staking 2': {'address': '5ExampleStakingWalletNumberTwoXXXXXXXXXXXXXXXXXXX', 'color': '#ce93d8'},
+
+    # A plain wallet: just an address and a color
+    'Spending':  {'address': '5ExampleEverydaySpendingWalletXXXXXXXXXXXXXXXXXXX', 'color': '#f5a623'},
+}
+
+# Processor manager ID from Acurast Pulse. Use None if you don't run a processor fleet.
+MANAGER_ID = '1234'
+
+# Keep the defaults unless you want the database somewhere else
+DB_PATH   = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'acurast_rewards.db')
+HTML_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'dashboard_v2.html')
+
+# '127.0.0.1' = this machine only (recommended). See "Viewing it from another device" below.
+DASHBOARD_HOST = '127.0.0.1'
+DASHBOARD_PORT = 8888
+```
+
+Tips:
+- Labels (`'My Fleet'`, `'Staking 1'`...) are just the tab names. Call them whatever you like.
+- `color` is any hex color and is used for that wallet's tab and chart.
+- Only one wallet normally needs `'processor': True`: the one that manages your phones.
+- If you edit `config.py` while the dashboard is running, restart it: `pm2 restart acurast-dashboard`.
+
 ## Run 24/7 with PM2
 
 ```bash
@@ -100,6 +139,14 @@ pm2 restart acurast-dashboard
 ```
 
 Your `config.py` and database are untouched by updates.
+
+## Credits
+
+This dashboard wouldn't exist without these projects. Go check them out:
+
+- **[Acurast](https://acurast.com)**: the decentralized compute network this tracks. Manage your wallets, staking and claims on the **[Acurast Hub](https://hub.acurast.com)**.
+- **[Acurast Pulse](https://www.acurastpulse.com)**: the explorer and API behind the reward history, fee data and processor fleet stats. Huge thanks to its creators for making that data available.
+- **[CoinGecko](https://www.coingecko.com)**: the live ACU price.
 
 ## Disclaimer
 
