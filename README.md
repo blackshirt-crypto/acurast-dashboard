@@ -37,9 +37,12 @@ python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 
-# 3. Create your personal config
-cp config.example.py config.py
-nano config.py        # add your wallet addresses (see below)
+# 3. Create your personal config (interactive wizard)
+python3 setup.py
+
+# Or do it manually:
+# cp config.example.py config.py
+# nano config.py
 
 # 4. Run it
 python3 acurast_daemon_v2.py
