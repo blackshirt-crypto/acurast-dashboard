@@ -37,10 +37,11 @@ python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 
-# 3. Create your personal config (interactive wizard)
-python3 setup.py
+# 3. Create your config
+#    Open setup.html in your browser, fill in your wallets,
+#    then click "Download config.py" and save it to this folder.
 
-# Or do it manually:
+# Or do it manually (no browser needed):
 # cp config.example.py config.py
 # nano config.py
 
