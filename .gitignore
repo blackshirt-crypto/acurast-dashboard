@@ -1,0 +1,8 @@
+config.py
+*.db
+*.db-journal
+dashboard_v2.html
+*.bak
+*.log
+__pycache__/
+*.pyc
