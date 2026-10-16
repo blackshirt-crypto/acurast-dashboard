@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Acurast Dashboard — Setup</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&display=swap');
+
+  :root {
+    --bg: #1a1c18;
+    --bg-card: #22251e;
+    --bg-input: #2a2d25;
+    --border: #3a3d35;
+    --border-focus: #c8f135;
+    --text: #e8e8e0;
+    --text-dim: #8a8d82;
+    --accent: #c8f135;
+    --accent-dim: #8aad20;
+    --error: #ef5555;
+    --error-bg: #3a1515;
+    --success: #55ef77;
+    --link: #4fc3f7;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+    padding: 2rem 1rem 4rem;
+  }
+
+  .container {
+    max-width: 640px;
+    margin: 0 auto;
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .header h1 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--accent);
+    margin-bottom: 0.25rem;
+    letter-spacing: -0.02em;
+  }
+  .header p {
+    color: var(--text-dim);
+    font-size: 0.9rem;
+  }
+
+  /* Steps */
+  .step {
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+  }
+  .step-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+  }
+  .step-num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--bg);
+    background: var(--accent);
+    width: 1.5rem;
+    height: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    flex-shrink: 0;
+  }
+  .step h2 {
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+  .step-desc {
+    color: var(--text-dim);
+    font-size: 0.85rem;
+    margin-bottom: 1.25rem;
+    line-height: 1.5;
+  }
+  .step-desc a {
+    color: var(--link);
+    text-decoration: none;
+  }
+  .step-desc a:hover { text-decoration: underline; }
+
+  /* Form elements */
+  .field { margin-bottom: 1rem; }
+  .field:last-child { margin-bottom: 0; }
+
+  label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--text-dim);
+    margin-bottom: 0.35rem;
+  }
+
+  input[type="text"], input[type="number"] {
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.85rem;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  input:focus { border-color: var(--border-focus); }
+  input::placeholder { color: #555; }
+  input.invalid { border-color: var(--error); }
+
+  .field-hint {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    margin-top: 0.25rem;
+  }
+  .field-hint a { color: var(--link); text-decoration: none; }
+  .field-hint a:hover { text-decoration: underline; }
+
+  .field-error {
+    font-size: 0.75rem;
+    color: var(--error);
+    margin-top: 0.25rem;
+    display: none;
+  }
+  .field-error.visible { display: block; }
+
+  /* Color picker */
+  .color-row {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-top: 0.35rem;
+  }
+  .color-swatch {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 6px;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: border-color 0.15s, transform 0.1s;
+    position: relative;
+  }
+  .color-swatch:hover { transform: scale(1.15); }
+  .color-swatch.selected {
+    border-color: #fff;
+    box-shadow: 0 0 0 1px var(--bg);
+  }
+  .color-swatch .swatch-label {
+    display: none;
+    position: absolute;
+    bottom: calc(100% + 4px);
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.65rem;
+    white-space: nowrap;
+    background: #000;
+    color: #fff;
+    padding: 2px 6px;
+    border-radius: 3px;
+  }
+  .color-swatch:hover .swatch-label { display: block; }
+
+  /* Wallet cards */
+  .wallet-card {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    position: relative;
+  }
+  .wallet-card .wallet-num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    margin-bottom: 0.75rem;
+  }
+  .wallet-card .remove-btn {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    cursor: pointer;
+    font-size: 1.1rem;
+    line-height: 1;
+    padding: 0.25rem;
+  }
+  .wallet-card .remove-btn:hover { color: var(--error); }
+
+  .inline-fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+  }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.55rem 1rem;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 500;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s;
+    background: var(--bg-input);
+    color: var(--text);
+  }
+  .btn:hover { border-color: var(--text-dim); }
+
+  .btn-primary {
+    background: var(--accent);
+    color: var(--bg);
+    border-color: var(--accent);
+  }
+  .btn-primary:hover {
+    background: #d4f555;
+    border-color: #d4f555;
+  }
+
+  .btn-add {
+    width: 100%;
+    justify-content: center;
+    border-style: dashed;
+    color: var(--text-dim);
+    margin-top: 0.5rem;
+  }
+  .btn-add:hover { color: var(--accent); border-color: var(--accent); }
+
+  /* Output */
+  .output-section {
+    display: none;
+    margin-top: 2rem;
+  }
+  .output-section.visible { display: block; }
+
+  .output-section h2 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--accent);
+    margin-bottom: 1rem;
+  }
+
+  .config-preview {
+    background: #111;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.78rem;
+    line-height: 1.7;
+    color: #c8d8c0;
+    white-space: pre-wrap;
+    word-break: break-all;
+    max-height: 400px;
+    overflow-y: auto;
+    margin-bottom: 1rem;
+  }
+
+  .output-buttons {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  .copied-toast {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--accent);
+    color: var(--bg);
+    padding: 0.5rem 1.25rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    opacity: 0;
+    transition: all 0.3s;
+    pointer-events: none;
+  }
+  .copied-toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* Checkbox */
+  .check-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+  }
+  .check-row input[type="checkbox"] {
+    accent-color: var(--accent);
+    width: 1rem;
+    height: 1rem;
+  }
+  .check-row label {
+    font-size: 0.85rem;
+    color: var(--text);
+    margin: 0;
+  }
+
+  /* Responsive */
+  @media (max-width: 500px) {
+    .inline-fields { grid-template-columns: 1fr; }
+    body { padding: 1rem 0.75rem 3rem; }
+    .step { padding: 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <h1>Acurast Dashboard Setup</h1>
+    <p>Fill in your details below, then download your config.py</p>
+  </div>
+
+  <!-- STEP 1: Processor -->
+  <div class="step">
+    <div class="step-header">
+      <span class="step-num">1</span>
+      <h2>Processor Wallet</h2>
+    </div>
+    <p class="step-desc">
+      If you run a processor fleet, enter your manager wallet address.
+      Find it on the <a href="https://hub.acurast.com" target="_blank">Acurast Hub</a>
+      under Balances. This enables fleet and fee tracking. Leave blank to skip.
+    </p>
+
+    <div class="field">
+      <label>Processor wallet address</label>
+      <input type="text" id="proc-addr" placeholder="5YourProcessorAddressHere..." oninput="validateAddr(this)">
+      <div class="field-error" id="proc-addr-err"></div>
+    </div>
+
+    <div id="proc-extras" style="display:none">
+      <div class="inline-fields">
+        <div class="field">
+          <label>Tab label</label>
+          <input type="text" id="proc-label" value="Processor" placeholder="Processor">
+        </div>
+        <div class="field">
+          <label>Manager ID</label>
+          <input type="text" id="proc-manager" placeholder="Your manager number">
+          <div class="field-hint">
+            Find it on <a href="https://www.acurastpulse.com" target="_blank">Acurast Pulse</a>
+            — go to your manager page and copy the number from the URL
+          </div>
+          <div class="field-error" id="proc-manager-err"></div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Tab color</label>
+        <div class="color-row" id="proc-colors"></div>
+      </div>
+
+      <div class="field">
+        <label>Manual airdrop lock (optional)</label>
+        <input type="text" id="proc-lock" placeholder="0">
+        <div class="field-hint">
+          If the <a href="https://hub.acurast.com" target="_blank">Acurast Hub</a>
+          shows a "Locked by Airdrop" amount the dashboard can't read,
+          enter it here. Leave empty or 0 to skip.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 2: Additional wallets -->
+  <div class="step">
+    <div class="step-header">
+      <span class="step-num">2</span>
+      <h2>Additional Wallets</h2>
+    </div>
+    <p class="step-desc">
+      Add staking, spending, or any other Acurast wallet addresses.
+      Find your addresses on the <a href="https://hub.acurast.com" target="_blank">Acurast Hub</a>.
+    </p>
+
+    <div id="wallet-list"></div>
+    <button class="btn btn-add" onclick="addWallet()">+ Add wallet</button>
+  </div>
+
+  <!-- STEP 3: Dashboard settings -->
+  <div class="step">
+    <div class="step-header">
+      <span class="step-num">3</span>
+      <h2>Dashboard Settings</h2>
+    </div>
+    <p class="step-desc">
+      The dashboard runs a small web server on your machine.
+      The defaults work for most setups.
+    </p>
+
+    <div class="inline-fields">
+      <div class="field" style="grid-column: 1 / -1">
+        <label>Where are you running the dashboard?</label>
+        <div style="display:flex; gap:0.75rem; margin-top:0.35rem; flex-wrap:wrap">
+          <label style="display:flex; align-items:center; gap:0.4rem; cursor:pointer; font-size:0.85rem; color:var(--text)">
+            <input type="radio" name="host-mode" value="local" checked onchange="updateHost()" style="accent-color:var(--accent)">
+            On this machine (laptop/desktop)
+          </label>
+          <label style="display:flex; align-items:center; gap:0.4rem; cursor:pointer; font-size:0.85rem; color:var(--text)">
+            <input type="radio" name="host-mode" value="vps" onchange="updateHost()" style="accent-color:var(--accent)">
+            On a VPS / remote server (accessed via Tailscale or VPN)
+          </label>
+        </div>
+        <div id="vps-ip-field" style="display:none; margin-top:0.75rem">
+          <label>Your Tailscale / VPN IP address</label>
+          <input type="text" id="dash-access-ip" placeholder="e.g. 100.x.x.x" style="max-width:280px">
+          <div class="field-hint">
+            The IP you use to reach this machine over your VPN.
+            Find it with <code style="color:var(--accent)">tailscale ip -4</code> on the server.
+          </div>
+        </div>
+        <div class="field-hint" id="host-hint" style="margin-top:0.5rem">
+          The dashboard will only be reachable from this machine. Open
+          <code style="color:var(--accent)">http://127.0.0.1:8888</code> in your browser.
+        </div>
+        <input type="hidden" id="dash-host" value="127.0.0.1">
+      </div>
+      <div class="field">
+        <label>Port</label>
+        <input type="number" id="dash-port" value="8888" min="1024" max="65535">
+      </div>
+    </div>
+  </div>
+
+  <!-- Generate -->
+  <button class="btn btn-primary" onclick="generate()" style="width:100%; justify-content:center; padding:0.75rem;">
+    Generate config.py
+  </button>
+
+  <!-- Output -->
+  <div class="output-section" id="output">
+    <h2>Your config.py</h2>
+    <div class="config-preview" id="config-text"></div>
+    <div class="output-buttons">
+      <button class="btn btn-primary" onclick="downloadConfig()">Download config.py</button>
+      <button class="btn" onclick="copyConfig()">Copy to clipboard</button>
+    </div>
+  </div>
+</div>
+
+<div class="copied-toast" id="toast">Copied to clipboard</div>
+
+<script>
+const PALETTE = [
+  { hex: '#c8f135', name: 'Green-Yellow' },
+  { hex: '#f5a623', name: 'Orange' },
+  { hex: '#4fc3f7', name: 'Light Blue' },
+  { hex: '#ce93d8', name: 'Purple' },
+  { hex: '#ef9a9a', name: 'Coral' },
+  { hex: '#80cbc4', name: 'Teal' },
+  { hex: '#fff176', name: 'Yellow' },
+  { hex: '#a5d6a7', name: 'Mint' },
+  { hex: '#90caf9', name: 'Sky Blue' },
+  { hex: '#ffab91', name: 'Salmon' },
+];
+
+let walletCount = 0;
+
+// Build color swatches for a container, selecting the given index by default
+function buildColors(containerId, defaultIdx) {
+  const row = document.getElementById(containerId);
+  row.innerHTML = '';
+  PALETTE.forEach((c, i) => {
+    const sw = document.createElement('div');
+    sw.className = 'color-swatch' + (i === defaultIdx ? ' selected' : '');
+    sw.style.background = c.hex;
+    sw.dataset.hex = c.hex;
+    sw.innerHTML = '<span class="swatch-label">' + c.name + '</span>';
+    sw.onclick = () => {
+      row.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
+      sw.classList.add('selected');
+    };
+    row.appendChild(sw);
+  });
+}
+
+function getSelectedColor(containerId) {
+  const sel = document.querySelector('#' + containerId + ' .selected');
+  return sel ? sel.dataset.hex : PALETTE[0].hex;
+}
+
+// Initialize processor colors
+buildColors('proc-colors', 0);
+
+// Show/hide processor extras based on address
+document.getElementById('proc-addr').addEventListener('input', function() {
+  document.getElementById('proc-extras').style.display = this.value.trim() ? '' : 'none';
+});
+
+// Address validation
+function validateAddr(input) {
+  const val = input.value.trim();
+  const errEl = document.getElementById(input.id + '-err');
+  if (!errEl) return;
+
+  if (!val) {
+    input.classList.remove('invalid');
+    errEl.textContent = '';
+    errEl.classList.remove('visible');
+    return;
+  }
+  if (!val.startsWith('5')) {
+    input.classList.add('invalid');
+    errEl.textContent = 'Address must start with 5';
+    errEl.classList.add('visible');
+    return;
+  }
+  if (val.length !== 48) {
+    input.classList.add('invalid');
+    errEl.textContent = 'Should be 48 characters (currently ' + val.length + ')';
+    errEl.classList.add('visible');
+    return;
+  }
+  if (!/^[1-9A-HJ-NP-Za-km-z]+$/.test(val)) {
+    input.classList.add('invalid');
+    errEl.textContent = 'Contains invalid characters';
+    errEl.classList.add('visible');
+    return;
+  }
+  input.classList.remove('invalid');
+  errEl.textContent = '';
+  errEl.classList.remove('visible');
+}
+
+// Manager ID validation
+document.getElementById('proc-manager').addEventListener('input', function() {
+  const errEl = document.getElementById('proc-manager-err');
+  const val = this.value.trim();
+  if (val && !/^\d+$/.test(val)) {
+    this.classList.add('invalid');
+    errEl.textContent = 'Manager ID should be a number, not a wallet address';
+    errEl.classList.add('visible');
+  } else {
+    this.classList.remove('invalid');
+    errEl.textContent = '';
+    errEl.classList.remove('visible');
+  }
+});
+
+// Host mode toggle
+function updateHost() {
+  const mode = document.querySelector('input[name="host-mode"]:checked').value;
+  const hint = document.getElementById('host-hint');
+  const hostInput = document.getElementById('dash-host');
+  const vpsField = document.getElementById('vps-ip-field');
+  if (mode === 'local') {
+    hostInput.value = '127.0.0.1';
+    vpsField.style.display = 'none';
+    hint.innerHTML = 'Open <code style="color:var(--accent)">http://127.0.0.1:8888</code> in your browser.';
+  } else {
+    hostInput.value = '0.0.0.0';
+    vpsField.style.display = '';
+    hint.innerHTML = 'Use a firewall to restrict access to your VPN. For example with UFW + Tailscale: <code style="color:var(--accent)">sudo ufw allow in on tailscale0 to any port 8888</code>';
+  }
+}
+
+// Update the VPS hint when the user types their IP
+document.getElementById('dash-access-ip').addEventListener('input', function() {
+  const ip = this.value.trim();
+  const port = document.getElementById('dash-port').value || '8888';
+  const hint = document.getElementById('host-hint');
+  if (ip) {
+    hint.innerHTML = 'Access your dashboard at <code style="color:var(--accent)">http://' + ip + ':' + port + '</code><br>Use a firewall to restrict access to your VPN. For example with UFW + Tailscale: <code style="color:var(--accent)">sudo ufw allow in on tailscale0 to any port ' + port + '</code>';
+  } else {
+    hint.innerHTML = 'Use a firewall to restrict access to your VPN. For example with UFW + Tailscale: <code style="color:var(--accent)">sudo ufw allow in on tailscale0 to any port ' + port + '</code>';
+  }
+});
+
+// Add wallet card
+function addWallet() {
+  walletCount++;
+  const idx = walletCount;
+  const colorIdx = idx % PALETTE.length;
+  const containerId = 'wallet-colors-' + idx;
+
+  const card = document.createElement('div');
+  card.className = 'wallet-card';
+  card.id = 'wallet-' + idx;
+  card.innerHTML = `
+    <div class="wallet-num">Wallet ${idx}</div>
+    <button class="remove-btn" onclick="removeWallet(${idx})" title="Remove">&times;</button>
+    <div class="field">
+      <label>Wallet address</label>
+      <input type="text" id="waddr-${idx}" placeholder="5YourAddressHere..." oninput="validateAddr(this)">
+      <div class="field-error" id="waddr-${idx}-err"></div>
+    </div>
+    <div class="inline-fields">
+      <div class="field">
+        <label>Tab label</label>
+        <input type="text" id="wlabel-${idx}" placeholder="e.g. Staking 1">
+      </div>
+      <div class="field">
+        <label>Manual lock (optional)</label>
+        <input type="text" id="wlock-${idx}" placeholder="0">
+      </div>
+    </div>
+    <div class="field">
+      <label>Tab color</label>
+      <div class="color-row" id="${containerId}"></div>
+    </div>
+  `;
+
+  document.getElementById('wallet-list').appendChild(card);
+  buildColors(containerId, colorIdx);
+}
+
+function removeWallet(idx) {
+  const el = document.getElementById('wallet-' + idx);
+  if (el) el.remove();
+}
+
+// Generate config.py
+function generate() {
+  const lines = [];
+  lines.push('# Acurast Dashboard -- config.py');
+  lines.push('# Generated by setup.html. Edit anytime, then restart the dashboard.');
+  lines.push('import os');
+  lines.push('');
+  lines.push('WALLETS = {');
+
+  const procAddr = document.getElementById('proc-addr').value.trim();
+  let managerId = 'None';
+
+  if (procAddr) {
+    const label = document.getElementById('proc-label').value.trim() || 'Processor';
+    const color = getSelectedColor('proc-colors');
+    const mid = document.getElementById('proc-manager').value.trim();
+    const lock = parseFloat(document.getElementById('proc-lock').value) || 0;
+
+    if (mid && !/^\d+$/.test(mid)) {
+      alert('Manager ID should be a number, not a wallet address. Find it in your Acurast Pulse manager page URL.');
+      return;
+    }
+
+    managerId = mid ? "'" + mid + "'" : 'None';
+
+    let parts = "'address': '" + procAddr + "', 'color': '" + color + "', 'processor': True";
+    if (lock > 0) parts += ", 'manual_lock': " + lock;
+    lines.push("    '" + label + "': {" + parts + "},");
+  }
+
+  // Additional wallets
+  const cards = document.querySelectorAll('.wallet-card');
+  cards.forEach(card => {
+    const idx = card.id.split('-')[1];
+    const addr = document.getElementById('waddr-' + idx).value.trim();
+    const label = document.getElementById('wlabel-' + idx).value.trim();
+    const lock = parseFloat(document.getElementById('wlock-' + idx).value) || 0;
+    const color = getSelectedColor('wallet-colors-' + idx);
+
+    if (!addr || !label) return;
+
+    let parts = "'address': '" + addr + "', 'color': '" + color + "'";
+    if (lock > 0) parts += ", 'manual_lock': " + lock;
+    lines.push("    '" + label + "': {" + parts + "},");
+  });
+
+  lines.push('}');
+  lines.push('');
+  lines.push('MANAGER_ID = ' + managerId);
+  lines.push('');
+  lines.push("DB_PATH   = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'acurast_rewards.db')");
+  lines.push("HTML_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'dashboard_v2.html')");
+  lines.push('');
+
+  let host = document.getElementById('dash-host').value.trim()
+    .replace('http://', '').replace('https://', '').replace(/\/+$/, '');
+  const port = parseInt(document.getElementById('dash-port').value) || 8888;
+  const accessIp = document.getElementById('dash-access-ip').value.trim();
+
+  lines.push("DASHBOARD_HOST = '" + host + "'");
+  lines.push("DASHBOARD_PORT = " + port);
+  if (host === '0.0.0.0' && accessIp) {
+    lines.push('# Access your dashboard at: http://' + accessIp + ':' + port);
+  } else if (host === '127.0.0.1') {
+    lines.push('# Access your dashboard at: http://127.0.0.1:' + port);
+  }
+  lines.push('');
+
+  const configText = lines.join('\n');
+  document.getElementById('config-text').textContent = configText;
+  document.getElementById('output').classList.add('visible');
+  document.getElementById('output').scrollIntoView({ behavior: 'smooth' });
+}
+
+function downloadConfig() {
+  const text = document.getElementById('config-text').textContent;
+  const blob = new Blob([text], { type: 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'config.py';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function copyConfig() {
+  const text = document.getElementById('config-text').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const toast = document.getElementById('toast');
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 2000);
+  });
+}
+</script>
+</body>
+</html>
