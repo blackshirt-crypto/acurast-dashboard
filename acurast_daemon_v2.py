@@ -180,6 +180,31 @@ def classify_tx(direction, counterpart):
         return 'heartbeat_fee'
     return 'transfer'
 
+def pulse_sync_processors():
+    if not MANAGER_ID:
+        return
+    conn = db_connect()
+    processors = conn.execute('SELECT id, phone_name, address FROM processors WHERE enabled=1').fetchall()
+    if not processors:
+        conn.close()
+        return
+    now_ts = now_utc()
+    for proc in processors:
+        proc_id, phone_name, address = proc['id'], proc['phone_name'], proc['address']
+        try:
+            url = f'{PULSE_API}/processor/{address}'
+            with urllib.request.urlopen(url, timeout=10) as res:
+                data = json.loads(res.read())
+            hb_now = data.get('current_epoch', {}).get('heartbeats', 0)
+            reward_24h = str(int(data.get('last_24h', {}).get('reward_raw', 0)))
+            last_seen = data.get('last_heartbeat_ts')
+            conn.execute('INSERT INTO processor_epochs (processor_id, ts, heartbeats_now, reward_24h_raw, last_seen_ts) VALUES (?, ?, ?, ?, ?) ON CONFLICT(processor_id, ts) DO UPDATE SET heartbeats_now=excluded.heartbeats_now, reward_24h_raw=excluded.reward_24h_raw, last_seen_ts=excluded.last_seen_ts', (proc_id, now_ts, hb_now, reward_24h, last_seen))
+            log.info(f'Synced {phone_name}')
+        except Exception as e:
+            log.error(f'Error syncing {phone_name}: {e}')
+    conn.commit()
+    conn.close()
+
 # ── Price ─────────────────────────────────────────────────────────────────────
 def get_acu_price():
     # Try to get cached price first — avoids DB lock during scans
@@ -301,7 +326,7 @@ def pulse_sync_rewards(conn, label):
     rows = conn.execute(
         "SELECT substr(ts,1,10) as day, SUM(CAST(amount_raw AS REAL)) as total,"
         " COUNT(*) as cnt FROM pulse_ledger"
-        " WHERE wallet=? AND classification=\"compute_reward\" AND direction=\"in\""
+        " WHERE wallet=? AND classification IN (\"compute_reward\",\"staking_withdrawal\") AND direction=\"in\""
         " GROUP BY substr(ts,1,10)", (label,)
     ).fetchall()
     for row in rows:
@@ -550,7 +575,7 @@ def generate_dashboard(price=None):
         pulse_claims = conn.execute(
             "SELECT pulse_id, block_number as block, ts, amount_raw, extrinsic_method, classification "
             "FROM pulse_ledger WHERE wallet=? AND direction='in' "
-            "AND (classification='compute_reward' OR "
+            "AND (classification IN ('compute_reward','staking_withdrawal') OR "
             "     (extrinsic_method='compoundDelegation' AND classification IS NULL)) "
             "ORDER BY block_number DESC LIMIT 100",
             (label,)
@@ -964,7 +989,7 @@ def generate_dashboard(price=None):
         bals  = [round(r['avg_free'] / (10 ** DECIMALS), 4) for r in w['bal_history']]
 
         cells = (
-            stat_cell('c-balance', 'Wallet Balance',
+            stat_cell('c-balance', 'Total Balance',
                       format(w['wallet_total'], ',.4f'),
                       usd(w['wallet_total']),
                       'Total ACU in this wallet on-chain (System.Account free field). Includes both locked and freely available portions.') +
@@ -978,9 +1003,9 @@ def generate_dashboard(price=None):
                       usd(w['staked']),
                       'ACU locked in staking. Earns epoch rewards every ~90 min but cannot be moved without triggering a cooldown that halves rewards until exit.',
                       lock=True) +
-            stat_cell('c-free', 'Free',
+            stat_cell('c-free', 'Transferable',
                       fmt(w['free_f'], 4),
-                      usd(w['free_f']),
+                      usd(w['free_f']) + ' &middot; free to send / sell',
                       'ACU available right now with no restrictions. Can be transferred to another wallet, staked with a committer, or delegated.') +
             stat_cell('c-rewards', 'Daily Avg',
                       fmt(w['daily_est'], 4) if w['daily_est'] > 0 else '—',
@@ -1029,10 +1054,10 @@ def generate_dashboard(price=None):
                       usd(grand_frozen),
                       'Total ACU locked in staking across all wallets.',
                       lock=True) +
-            stat_cell('c-free', 'Total Free',
+            stat_cell('c-free', 'Total Transferable',
                       fmt(grand_free_f, 4),
                       usd(grand_free_f),
-                      'Total freely transferable ACU across all wallets (Wallet Balance minus Staked).') +
+                      'Total freely transferable ACU across all wallets (Total Balance minus Staked).') +
             stat_cell('c-rewards', 'Est. Daily',
                       fmt(grand_daily, 4) if grand_daily > 0 else '—',
                       (usd(grand_daily) + ' / day') if grand_daily > 0 else 'Need 2+ claims',
@@ -1296,8 +1321,43 @@ a { color: #c8f135; text-decoration: none; }
     return html
 
 # ── HTTP Server ───────────────────────────────────────────────────────────────
+def api_processors_list():
+    """Return processor stats as JSON."""
+    conn = db_connect()
+    procs = conn.execute('SELECT id, phone_name, address FROM processors WHERE enabled=1 ORDER BY phone_name').fetchall()
+    result = {'processors': [], 'summary': {'total_phones': len(procs), 'online_count': 0}}
+    for p in procs:
+        epoch = conn.execute('SELECT heartbeats_now, reward_24h_raw, last_seen_ts FROM processor_epochs WHERE processor_id=? ORDER BY ts DESC LIMIT 1', (p['id'],)).fetchone()
+        status = 'offline'
+        hb_now = 0
+        reward_24h = '0'
+        if epoch:
+            hb_now = epoch['heartbeats_now'] or 0
+            reward_24h = epoch['reward_24h_raw'] or '0'
+            if epoch['last_seen_ts']:
+                now = datetime.now(timezone.utc)
+                last_dt = datetime.fromisoformat(epoch['last_seen_ts'].replace(' ', 'T') + '+00:00')
+                mins = (now - last_dt).total_seconds() / 60
+                if mins < 30:
+                    status = 'active'
+                    result['summary']['online_count'] += 1
+                elif mins < 60:
+                    status = 'stale'
+        result['processors'].append({'phone_name': p['phone_name'], 'address': short_addr(p['address']), 'status': status, 'hb_now': hb_now, 'reward_24h': fmt(to_float(reward_24h), 6)})
+    conn.close()
+    return result
+
 class DashHandler(SimpleHTTPRequestHandler):
     def do_GET(self):
+        # API endpoints
+        if self.path == '/api/processors':
+            data = api_processors_list()
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            self.wfile.write(__import__('json').dumps(data).encode())
+            return
+        
         try:
             html = generate_dashboard(get_acu_price())
             status = 200
